@@ -9,6 +9,9 @@
 including the recipient's address, 
 the amount, and the digital signature, to the server.
 
+
+make a genrate function that genrate public key and private key and display it 
+
 -----------------------------------------
 
     //server side 
@@ -24,3 +27,22 @@ the amount, and the digital signature, to the server.
 
 5 If the signature is valid, proceed with processing the transaction,
  updating balances, and recording the transaction on the server.
+
+how do i verify digital signature in server when recived from clients 
+
+ -----------------------------
+
+//genrate a function for new keys 
+
+ client requesting server balance of the address he sending  
+const msg ={
+      sender: address,
+      amount: parseInt(sendAmount),
+      recipient,
+    }
+      // calculating hash of the msg 
+    const msghash = keccak256(utf8ToBytes(JSON.stringify(msg))); 
+
+    // signing the transaction 
+    const signmsg =secp.sign(msghash, privateKey, { recovered: true });
+  
