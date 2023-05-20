@@ -1,0 +1,26 @@
+    //client side
+1 get recipent address and balnce 
+
+2 hash it 
+
+3 sign the hash msg using sender private key 
+
+4 Send the transaction data, 
+including the recipient's address, 
+the amount, and the digital signature, to the server.
+
+-----------------------------------------
+
+    //server side 
+1 Receive the transaction data from the client.
+
+2 Retrieve the sender's public key
+  associated with the address from which the transaction originates.
+
+3 Verify the digital signature by using the public key to decrypt 
+ and validate the signature against the provided transaction data.
+
+4  compare the retrieved public key with the stored public keys on the server to ensure it matches a known sender.
+
+5 If the signature is valid, proceed with processing the transaction,
+ updating balances, and recording the transaction on the server.
