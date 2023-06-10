@@ -15,9 +15,7 @@ function Wallet({ address, setAddress, balance, setBalance, privateKey, setPriva
 
     if (address) 
     {
-      const {
-        data: { balance },
-      } = await server.get(`balance/${address}`);
+      const { data: { balance },} = await server.get(`balance/${address}`);
       setBalance(balance);
     } else {
       setBalance(0);
@@ -32,8 +30,10 @@ function Wallet({ address, setAddress, balance, setBalance, privateKey, setPriva
         Private Key
         <input placeholder="Type in a private key" value={privateKey} onChange={onChange}></input>
       </label>
-
-    <div> 
+    {/*
+    
+  */}
+  <div> 
       Address: {address}
     </div>
       <div className="balance">Balance: {balance}</div>

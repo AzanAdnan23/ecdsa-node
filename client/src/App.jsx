@@ -3,6 +3,7 @@ import Transfer from "./Transfer";
 import "./App.scss";
 import { useState } from "react";
 import Keys from "./Keys";
+import GlobalAddresses from "./GlobalAdddress";
 
 function App() {
   const [balance, setBalance] = useState(0);
@@ -24,6 +25,8 @@ function App() {
         setAddress={setAddress}
       />
       <Transfer setBalance={setBalance} address={address} privateKey={privateKey}/>  
+
+      <GlobalAddresses />
       
     </div>
   );
