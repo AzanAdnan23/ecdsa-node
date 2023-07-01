@@ -3,6 +3,8 @@ const app = express();
 const cors = require("cors");
 const port = 3042;
 const secp = require("ethereum-cryptography/secp256k1");
+const { keccak256 } = require("ethereum-cryptography/keccak");
+const { utf8ToBytes, toHex } = require("ethereum-cryptography/utils");
 
 app.use(cors());
 app.use(express.json());
@@ -34,8 +36,6 @@ app.get("/balance/:addressParam", (req, res) => {
 });
 
 
-
-
 app.get("/balance/:address", (req, res) => {
   const { address } = req.params;
   const balance = balances[address] || 0;
@@ -44,23 +44,31 @@ app.get("/balance/:address", (req, res) => {
 
 app.post("/send", (req, res) => {
   
-  // TODO get a signature from client side application
-  // recover the public address from the signature  and check if the public key is new add in the database 
-  
-  const { sender, recipient, amount ,signature} = req.body;
-
-  // reicve signature from client side application here
+  // TODO get a signature from client side application 
   // recover the public address from the signature
 
- // const publicKey = secp256k1.recover(signature, messageHash);
-  //  display the public key
-  //console.log(publicKey.toString("hex"));
+  const { sender, recipient, amount, sign, senderPubKey } = req.body;
 
-  //  const isSigned = secp256k1.verify(signature, messageHash, publicKey);
+  const uint8PubKey = new Uint8Array(Object.entries(senderPubKey).map(([key, value]) => value));
+
+  const message = toHex(hashMessage(sender + "_" + amount + "_" + recipient));
+
+  // Parsed string back to their original form
+  let parsedSign = JSON.parse(sign);
+  parsedSign.r = BigInt(parsedSign.r);
+  parsedSign.s = BigInt(parsedSign.s);
+
+  const recovered = secp.secp256k1.verify(parsedSign, message, uint8PubKey);
+
+  if (!recovered) {
+    res
+      .status(400)
+      .send({ message: "You aren't the owner of this private key!" });
+    return;
+  }  
+  
   setInitialBalance(sender);
   setInitialBalance(recipient);
-
-
 
   if (balances[sender] < amount) {
     res.status(400).send({ message: "Not enough funds!" });
@@ -72,8 +80,6 @@ app.post("/send", (req, res) => {
 });
 
 
-
-
 function setInitialBalance(address) {
   if (!balances[address]) {
     balances[address] = 0;
@@ -82,3 +88,8 @@ function setInitialBalance(address) {
 app.listen(port, () => {
   console.log(`Listening on port ${port}!`);
 });
+
+const hashMessage = (message) => {
+  const bytes = utf8ToBytes(message);
+  return keccak256(bytes);
+};

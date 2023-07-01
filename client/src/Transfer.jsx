@@ -1,8 +1,9 @@
 import { useState } from "react";
 import server from "./server";
-import { keccak256 } from "ethereum-cryptography/keccak";
-import { secp256k1 } from 'ethereum-cryptography/secp256k1';
-import { utf8ToBytes } from "ethereum-cryptography/utils";
+import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import * as utils from "ethereum-cryptography/utils";
+import * as keccak from "ethereum-cryptography/keccak";
+
 
 function Transfer({ address, privateKey, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
@@ -10,33 +11,56 @@ function Transfer({ address, privateKey, setBalance }) {
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
+  const getpublicKey = (privKey) => secp256k1.getPublicKey(privKey);
+
+
+  // Hash a message
+  const hashMessage = (message) => {
+    const bytes = utils.utf8ToBytes(message);
+    return keccak.keccak256(bytes);
+  };
+
+  // Sign a message
+  const signMessage = (message) => {
+    const hashedMessage = utils.toHex(hashMessage(message));
+    try {
+      const sign = secp256k1.sign(hashedMessage, privateKey);
+      return sign;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   async function transfer(evt) {
     evt.preventDefault();
 
-    const msg = {
-      sender: address,
-      amount: parseInt(sendAmount),
-      recipient,
-    };
-  // Calculating hash of the msg
-  const msghash = keccak256(utf8ToBytes(JSON.stringify(msg)));
+    // Get the public key
+    const senderPubKey = getpublicKey(privateKey);
 
-  // Signing the transaction
-  const signature =  secp256k1.sign(msghash, privateKey);
+    // Create the message
+    const message = address + "_" + sendAmount + "_" + recipient;
 
+    // Sign the message
+    let sign = await signMessage(message);
 
-  const transaction = { 
-    sender: address,  // remove this after completing signature code
-    amount: parseInt(sendAmount),
-    recipient,
-    //signature,
-  };
+    // Convert sign components to strings and stringify the sign object
+    sign = JSON.stringify({
+      ...sign,
+      r: sign.r.toString(),
+      s: sign.s.toString(),
+    });
 
     try {
       const {
-        data: { balance },
-      } = await server.post(`send`, transaction);
-      
+        data: { balance },} = await server.post(`send`, {
+        message,
+        sender: address,
+        amount: parseInt(sendAmount),
+        recipient,
+        sign,
+        senderPubKey,
+      });
+
       setBalance(balance);
     } catch (ex) {
       alert(ex.response.data.message);
