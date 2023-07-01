@@ -29,3 +29,7 @@ The server folder contains a node.js server using [express](https://expressjs.co
 The application should connect to the default server port (3042) automatically! 
 
 _Hint_ - Use [nodemon](https://www.npmjs.com/package/nodemon) instead of `node` to automatically restart the server on any changes.
+
+
+![image](https://github.com/AzanAdnan23/ecdsa-node/assets/108145762/0c3e2aca-d18a-4d2d-a70e-e8aa7f814bfd)
+
